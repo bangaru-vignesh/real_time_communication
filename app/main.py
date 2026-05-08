@@ -35,7 +35,7 @@ templates = Jinja2Templates(directory="app/templates")
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("chat.html", {"request": request})
+    return templates.TemplateResponse(request, "chat.html")
 
 
 app.include_router(chat.router)
