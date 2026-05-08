@@ -57,13 +57,20 @@
 
             ws.onmessage = function(event) {
                 const data = JSON.parse(event.data);
-                if (data.sender_id === receiverId || data.sender_id === myId) {
-                    appendMessage(data.sender_id, data.content);
+                if (data.type === "message" && (data.sender_id === receiverId || data.sender_id === myId)) {
+                    appendMessage(data.sender_id, data.content, data.timestamp);
                 }
             };
             
-            ws.onclose = function() {
-                console.log("WebSocket disconnected.");
+            ws.onclose = function(event) {
+                console.log("WebSocket disconnected:", event);
+                alert("Connection lost. Please refresh or reconnect.");
+                document.getElementById("setup").style.display = "block";
+                document.getElementById("chatInterface").style.display = "none";
+            };
+
+            ws.onerror = function(err) {
+                console.error("WebSocket error:", err);
             };
         }
 
@@ -85,9 +92,18 @@
 
         function appendMessage(sender, content, timestamp) {
             const container = document.getElementById("messages");
+            
+            // Check if message already exists (to avoid duplicates)
+            const isMe = sender === myId;
+            const lastMsg = container.lastElementChild;
+            if (isMe && lastMsg && lastMsg.innerText.includes(content) && !timestamp) {
+                // If it's a local optimistic update, we might want to skip or update it
+                // For simplicity, we'll just let the server-broadcasted one handle it
+            }
+
             const div = document.createElement("div");
             div.className = "message";
-            const isMe = sender === myId;
+            
             let timeStr = "";
             if (timestamp) {
                 const date = new Date(timestamp);
@@ -95,17 +111,19 @@
             }
             div.innerHTML = `<span class="sender ${isMe ? 'me' : ''}">${isMe ? 'Me' : sender}:</span> ${content}${timeStr}`;
             container.appendChild(div);
-            // Auto scroll to bottom
             container.scrollTop = container.scrollHeight;
         }
 
         function sendMessage() {
             const input = document.getElementById("messageInput");
             const content = input.value.trim();
-            if (content && ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ receiver: receiverId, content: content }));
-                appendMessage(myId, content, new Date().toISOString());
-                input.value = "";
+            if (content && ws) {
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ receiver: receiverId, content: content }));
+                    input.value = "";
+                } else {
+                    alert("Not connected to server. Please reconnect.");
+                }
             }
         }
     </script>

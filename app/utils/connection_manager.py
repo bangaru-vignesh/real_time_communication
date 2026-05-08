@@ -72,17 +72,19 @@ class ConnectionManager:
                             except Exception:
                                 pass
                 else:
-                    # Specific receiver (message, typing, seen, etc.)
+                    # Send to BOTH sender and receiver so both UIs update
+                    sender = data.get("sender_id")
                     receiver = data.get("receiver_id")
-                    if receiver and self.is_online_local(receiver):
-                        # Send to ALL devices this specific user owns locally
+                    
+                    targets = [t for t in [sender, receiver] if t and self.is_online_local(t)]
+                    
+                    for target_id in targets:
                         dead_sockets = []
-                        for ws in self.active_connections[receiver]:
+                        for ws in self.active_connections[target_id]:
                             try:
                                 await ws.send_json(data)
                             except Exception:
                                 dead_sockets.append(ws)
                         
-                        # Cleanup any broken pipelines we discovered
                         for ws in dead_sockets:
-                            await self.disconnect(receiver, ws)
+                            await self.disconnect(target_id, ws)
