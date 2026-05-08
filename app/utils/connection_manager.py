@@ -2,14 +2,15 @@ import json
 import redis.asyncio as aioredis
 from typing import Dict, List
 from fastapi import WebSocket
+from app.core.config import settings
 
 
 class ConnectionManager:
     def __init__(self):
         # Multiple device support: Now stores a list of WebSockets per user
         self.active_connections: Dict[str, List[WebSocket]] = {}
-        # Connect to local Redis server
-        self.redis = aioredis.from_url("redis://localhost:6379")
+        # Connect to Redis server from settings
+        self.redis = aioredis.from_url(settings.REDIS_URL)
         self.pubsub = self.redis.pubsub()
 
     async def connect(self, user_id: str, websocket: WebSocket):

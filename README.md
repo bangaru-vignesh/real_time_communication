@@ -88,11 +88,26 @@ realchat/
    http://localhost:8000/
    ```
 
-## Usage
+## Deployment
 
-1. Open the UI via `http://localhost:8000/`.
-2. To test the chat, you can open two different browsers (or one normal and one incognito window).
-3. In the first window, type your user ID (e.g., `user1`) and the receiver ID (e.g., `user2`), and click **Connect**.
-4. In the second window, act as the receiver: type your ID (`user2`) and the receiver ID (`user1`), and click **Connect**.
-5. Start sending messages. The messages will instantly appear on both screens and will be saved in the local database.
-6. Re-connecting to the same user pair will load and display the full chat history.
+### Deploying to Render
+
+1. **Create a new Web Service**: Connect your GitHub repository.
+2. **Environment Variables**:
+   - `DATABASE_URL`: Your database connection string (e.g., PostgreSQL).
+   - `REDIS_URL`: Your Render Redis instance URL.
+   - `SECRET_KEY`: A long, random string.
+3. **Build Command**: `pip install -r requirements.txt`
+4. **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+
+### Deploying with Docker
+
+You can also use the provided `Dockerfile` to deploy on platforms like AWS, GCP, or DigitalOcean:
+
+```bash
+docker build -t realchat .
+docker run -p 8000:8000 realchat
+```
+
+## Usage
+...

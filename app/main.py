@@ -13,6 +13,7 @@ import app.models.message
 # Ensure DB tables are created
 Base.metadata.create_all(bind=engine)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Start the Redis listener background task
@@ -20,6 +21,7 @@ async def lifespan(app: FastAPI):
     yield
     # Shutdown
     task.cancel()
+
 
 app = FastAPI(title="RealChat", lifespan=lifespan)
 
